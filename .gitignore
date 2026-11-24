@@ -12,3 +12,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 agent/costs.jsonl
+
+web/node_modules/
+web/dist/
