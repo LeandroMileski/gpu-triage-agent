@@ -1,0 +1,29 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: vllm
+  namespace: llm
+  labels:
+    app: vllm
+spec:
+  selector:
+    matchLabels:
+      app: vllm
+  podMetricsEndpoints:
+    - port: http
+      path: /metrics
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: dcgm-exporter
+  namespace: gpu-metrics
+  labels:
+    app: dcgm-exporter
+spec:
+  selector:
+    matchLabels:
+      app: dcgm-exporter
+  podMetricsEndpoints:
+    - port: metrics
+      path: /metrics

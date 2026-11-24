@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - nodepool.yaml
+  - vllm.yaml
+  - gpu-exporter.yaml
+  - lab.yaml
+  - rbac.yaml
+  - agent.yaml
+  - podmonitors.yaml
+  - dashboard.yaml
+images:
+  # Replace newName with `terraform output -raw ecr_repository_url` after the first apply.
+  - name: debugger-agent
+    newName: 111111111111.dkr.ecr.us-east-1.amazonaws.com/debugger-agent
+    newTag: latest

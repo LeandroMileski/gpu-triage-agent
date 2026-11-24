@@ -1,0 +1,97 @@
+alertmanager:
+  enabled: false
+
+defaultRules:
+  create: false
+
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+
+grafana:
+  adminPassword: demo
+  defaultDashboardsEnabled: false
+  service:
+    type: ClusterIP
+  nodeSelector:
+    workload: monitoring
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: monitoring
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+  sidecar:
+    dashboards:
+      enabled: true
+      searchNamespace: ALL
+
+prometheusOperator:
+  nodeSelector:
+    workload: monitoring
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: monitoring
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      memory: 256Mi
+
+kube-state-metrics:
+  nodeSelector:
+    workload: monitoring
+  tolerations:
+    - key: workload
+      operator: Equal
+      value: monitoring
+      effect: NoSchedule
+  resources:
+    requests:
+      cpu: 20m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+
+prometheus-node-exporter:
+  tolerations:
+    - operator: Exists
+
+prometheus:
+  prometheusSpec:
+    retention: 1d
+    replicas: 1
+    nodeSelector:
+      workload: monitoring
+    tolerations:
+      - key: workload
+        operator: Equal
+        value: monitoring
+        effect: NoSchedule
+    resources:
+      requests:
+        cpu: 100m
+        memory: 400Mi
+      limits:
+        memory: 1200Mi
+    storageSpec:
+      emptyDir:
+        sizeLimit: 2Gi
+    podMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector: {}
+    podMonitorNamespaceSelector: {}
+    serviceMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelector: {}
+    serviceMonitorNamespaceSelector: {}
+    ruleSelectorNilUsesHelmValues: false

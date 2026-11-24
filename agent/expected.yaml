@@ -1,0 +1,8 @@
+# Answers for `python diagnose.py eval`. This file is not applied to the cluster
+# and is not copied into the container image.
+crashloop: crashloop
+oomkilled: oomkilled
+imagepull: imagepull
+config-error: config_error
+failing-probe: failing_probe
+pending-pvc: pending_pvc

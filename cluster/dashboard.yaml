@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: debugger-dashboard
+  namespace: llm
+  labels:
+    grafana_dashboard: "1"
+data:
+  debugger.json: |
+    {
+      "title": "Debugger Agent",
+      "uid": "debugger-agent",
+      "schemaVersion": 39,
+      "refresh": "30s",
+      "time": {"from": "now-6h", "to": "now"},
+      "timezone": "browser",
+      "templating": {
+        "list": [
+          {
+            "name": "gpu_usd_per_hour",
+            "type": "textbox",
+            "label": "GPU USD per hour",
+            "query": "0.50",
+            "current": {"text": "0.50", "value": "0.50"}
+          }
+        ]
+      },
+      "panels": [
+        {
+          "type": "stat",
+          "title": "Prompt tokens",
+          "gridPos": {"h": 6, "w": 6, "x": 0, "y": 0},
+          "targets": [{"expr": "sum(vllm:prompt_tokens_total)", "refId": "A"}],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "stat",
+          "title": "Completion tokens",
+          "gridPos": {"h": 6, "w": 6, "x": 6, "y": 0},
+          "targets": [{"expr": "sum(vllm:generation_tokens_total)", "refId": "A"}],
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "stat",
+          "title": "GPU dollars per hour while the node is up",
+          "gridPos": {"h": 6, "w": 6, "x": 12, "y": 0},
+          "targets": [
+            {
+              "expr": "count(kube_node_labels{label_karpenter_sh_nodepool=\"gpu-inference\"}) * $gpu_usd_per_hour",
+              "refId": "A"
+            }
+          ],
+          "fieldConfig": {"defaults": {"unit": "currencyUSD", "decimals": 2}},
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "stat",
+          "title": "GPU utilization",
+          "gridPos": {"h": 6, "w": 6, "x": 18, "y": 0},
+          "targets": [{"expr": "avg(DCGM_FI_DEV_GPU_UTIL)", "refId": "A"}],
+          "fieldConfig": {"defaults": {"unit": "percent", "decimals": 0}},
+          "options": {"reduceOptions": {"calcs": ["lastNotNull"]}}
+        },
+        {
+          "type": "timeseries",
+          "title": "Lab pod restarts",
+          "gridPos": {"h": 8, "w": 24, "x": 0, "y": 6},
+          "targets": [
+            {
+              "expr": "sum by (pod) (kube_pod_container_status_restarts_total{namespace=\"k8s-lab\"})",
+              "legendFormat": "{{pod}}",
+              "refId": "A"
+            }
+          ]
+        }
+      ]
+    }
