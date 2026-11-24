@@ -2,7 +2,7 @@
 
 A self-hosted model on a Spot GPU diagnoses six deliberately broken pods. The Kubernetes Triage Agent can read those pods and nothing else. The GPU exists only while a Git commit says `replicas: 1`.
 
-![Architecture](docs/architecture.jpg)
+![Architecture](docs/architecture.png)
 
 Git holds Terraform and the Argo CD apps. Terraform builds the EKS cluster. Argo CD, running on the system node, applies the apps back onto the cluster. Karpenter creates the Spot GPU node when vLLM cannot schedule, and removes it after the pod is gone.
 
