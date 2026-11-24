@@ -1,15 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: debugger-dashboard
+  name: triage-dashboard
   namespace: llm
   labels:
     grafana_dashboard: "1"
 data:
-  debugger.json: |
+  triage.json: |
     {
-      "title": "Debugger Agent",
-      "uid": "debugger-agent",
+      "title": "Kubernetes Triage Agent",
+      "uid": "triage-agent",
       "schemaVersion": 39,
       "refresh": "30s",
       "time": {"from": "now-6h", "to": "now"},

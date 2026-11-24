@@ -354,8 +354,8 @@ resource "helm_release" "argocd_apps" {
   depends_on = [helm_release.argocd]
 }
 
-resource "aws_ecr_repository" "debugger_agent" {
-  name                 = "debugger-agent"
+resource "aws_ecr_repository" "triage_agent" {
+  name                 = "triage-agent"
   image_tag_mutability = "MUTABLE"
   force_delete         = true
 }

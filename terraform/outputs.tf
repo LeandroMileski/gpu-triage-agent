@@ -14,8 +14,8 @@ output "configure_kubectl" {
 }
 
 output "ecr_repository_url" {
-  description = "Push the Debugger Agent image here, then set newName in cluster/kustomization.yaml."
-  value       = aws_ecr_repository.debugger_agent.repository_url
+  description = "Push the Kubernetes Triage Agent image here, then set newName in cluster/kustomization.yaml."
+  value       = aws_ecr_repository.triage_agent.repository_url
 }
 
 output "karpenter_node_role" {

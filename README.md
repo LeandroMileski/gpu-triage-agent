@@ -1,6 +1,6 @@
-# Debugger Agent
+# Kubernetes Triage Agent
 
-A self-hosted model on a Spot GPU diagnoses six deliberately broken pods. The Debugger Agent can read those pods and nothing else. The GPU exists only while a Git commit says `replicas: 1`.
+A self-hosted model on a Spot GPU diagnoses six deliberately broken pods. The Kubernetes Triage Agent can read those pods and nothing else. The GPU exists only while a Git commit says `replicas: 1`.
 
 ![Architecture](docs/architecture.jpg)
 
@@ -8,11 +8,11 @@ Git holds Terraform and the Argo CD apps. Terraform builds the EKS cluster. Argo
 
 ## What runs where
 
-- **System node group**, one `t3.medium`: CoreDNS, Karpenter, Argo CD, the Debugger Agent, and the six broken pods. A ResourceQuota of 1 CPU and 512Mi keeps the lab from crowding the node.
+- **System node group**, one `t3.medium`: CoreDNS, Karpenter, Argo CD, the Kubernetes Triage Agent, and the six broken pods. A ResourceQuota of 1 CPU and 512Mi keeps the lab from crowding the node.
 - **Monitoring node group**, one `t3.medium`, tainted `workload=monitoring:NoSchedule`: Prometheus and Grafana. Broken pods cannot land here.
 - **GPU node**, Spot `g6.xlarge` or `g5.xlarge`, scaled from 0 to 1 by Karpenter: vLLM serving `Qwen/Qwen2.5-7B-Instruct-AWQ`, the NVIDIA device plugin, and the DCGM exporter. The EKS accelerated image already contains the driver and the container toolkit. There is no GPU Operator.
 
-The agent source is `agent/diagnose.py`. The running Job uses a container image built from that file, pushed to ECR. The ServiceAccount `debugger-agent` is what makes it read-only. The image does not grant permissions.
+The agent source is `agent/diagnose.py`. The running Job uses a container image built from that file, pushed to ECR. The ServiceAccount `triage-agent` is what makes it read-only. The image does not grant permissions.
 
 ## Cost of a session
 
@@ -64,23 +64,23 @@ Wake the GPU by setting `replicas: 1` in [cluster/vllm.yaml](cluster/vllm.yaml) 
 
 ```bash
 kubectl -n llm get pods -w
-kubectl -n debugger create job debug-once --from=cronjob/debugger-agent
-kubectl -n debugger logs job/debug-once -f
+kubectl -n triage create job triage-once --from=cronjob/triage-agent
+kubectl -n triage logs job/triage-once -f
 ```
 
-Each line is one pod: category, root cause, evidence, a proposed fix, and the cost of that call. `kubectl logs job/debug-once | python3 agent/diagnose.py costs` sums the receipt. The GPU keeps billing until you set `replicas` back to 0 and push.
+Each line is one pod: category, root cause, evidence, a proposed fix, and the cost of that call. `kubectl -n triage logs job/triage-once | python3 agent/diagnose.py costs` sums the receipt. The GPU keeps billing until you set `replicas` back to 0 and push.
 
 ```bash
 kubectl -n monitoring port-forward svc/monitoring-grafana 3000:80
 ```
 
-Grafana user `admin`, password `demo`. The Debugger Agent dashboard shows tokens, GPU dollars per hour while the node is up, GPU utilization, and lab restarts. Prometheus keeps one day of data in memory. A restart forgets it.
+Grafana user `admin`, password `demo`. The Kubernetes Triage Agent dashboard shows tokens, GPU dollars per hour while the node is up, GPU utilization, and lab restarts. Prometheus keeps one day of data in memory. A restart forgets it.
 
 Score a saved log against the answers. The answer file stays on your machine. It is not in the cluster and not in the image.
 
 ```bash
-kubectl -n debugger logs job/debug-once > /tmp/debug.jsonl
-python3 agent/diagnose.py eval /tmp/debug.jsonl
+kubectl -n triage logs job/triage-once > /tmp/triage.jsonl
+python3 agent/diagnose.py eval /tmp/triage.jsonl
 ```
 
 Deleting the RoleBinding in [cluster/rbac.yaml](cluster/rbac.yaml) and pushing that commit is the kill switch. Argo CD removes it from the cluster.
@@ -88,7 +88,7 @@ Deleting the RoleBinding in [cluster/rbac.yaml](cluster/rbac.yaml) and pushing t
 ## Layout
 
 - [terraform/](terraform/) builds the VPC, EKS, both node groups, Karpenter, the device plugin, Argo CD, ECR, and the budget.
-- [cluster/](cluster/) is what Argo CD syncs: the GPU NodePool, vLLM, the DCGM exporter, the lab, the Debugger Agent, PodMonitors, and one Grafana dashboard.
+- [cluster/](cluster/) is what Argo CD syncs: the GPU NodePool, vLLM, the DCGM exporter, the lab, the Kubernetes Triage Agent, PodMonitors, and one Grafana dashboard.
 - [agent/diagnose.py](agent/diagnose.py) is the agent. [agent/expected.yaml](agent/expected.yaml) is the score sheet.
 
 The six failures in `k8s-lab` are a crash loop that prints a fake API key, an OOM past a 32Mi limit, a missing image tag, a missing ConfigMap key, a liveness probe on the wrong port, and a PVC whose StorageClass does not exist.
@@ -104,6 +104,6 @@ make validate   # terraform fmt, terraform validate, kustomize build
 
 ## Later
 
-The Debugger Agent stays read-only. A later version can file a ticket, and a separate agent, with its own image and ServiceAccount, can take that ticket when the severity matches what its permissions are allowed to fix. The path recorded for those agents is wider read access, then an agent that can change pods under guardrails, then an agent that opens a Git pull request.
+The Kubernetes Triage Agent stays read-only. A later version can file a ticket, and a separate agent, with its own image and ServiceAccount, can take that ticket when the severity matches what its permissions are allowed to fix. The path recorded for those agents is wider read access, then an agent that can change pods under guardrails, then an agent that opens a Git pull request.
 
 Still deferred: a chaos node pool, an admission policy, KEDA, the GPU Operator, private subnets, Alertmanager, and a disk for Prometheus.

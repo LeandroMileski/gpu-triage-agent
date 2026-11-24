@@ -1,6 +1,6 @@
 REGION ?= us-east-1
 CLUSTER ?= k8s-debug-demo
-IMAGE ?= debugger-agent
+IMAGE ?= triage-agent
 
 .PHONY: up pause down kubeconfig image-push test validate
 
