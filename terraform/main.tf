@@ -16,10 +16,10 @@ locals {
   azs              = slice(data.aws_availability_zones.available.names, 0, 2)
   workload_subnets = [module.vpc.public_subnets[0]]
 
-  # vpc-cni and kube-proxy are DaemonSets. operator Exists lets them run on
-  # the monitoring taint and the GPU taint. Their upstream defaults already
-  # do this; setting it here keeps that guarantee in this configuration.
-  daemonset_tolerations = jsonencode({
+  # vpc-cni is a DaemonSet. operator Exists lets it run on the monitoring
+  # taint and the GPU taint. kube-proxy already tolerates every taint by
+  # default, and its add-on schema rejects a top-level tolerations field.
+  vpc_cni_tolerations = jsonencode({
     tolerations = [
       {
         operator = "Exists"
@@ -93,12 +93,10 @@ module "eks" {
     eks-pod-identity-agent = {
       before_compute = true
     }
-    kube-proxy = {
-      configuration_values = local.daemonset_tolerations
-    }
+    kube-proxy = {}
     vpc-cni = {
       before_compute       = true
-      configuration_values = local.daemonset_tolerations
+      configuration_values = local.vpc_cni_tolerations
     }
   }
 

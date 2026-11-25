@@ -25,7 +25,7 @@ variable "node_count" {
 variable "gitops_repo_url" {
   description = "Git repository Argo CD syncs. A public repository needs no credentials."
   type        = string
-  default     = "https://github.com/example/k8s-debug-demo.git"
+  default     = "https://github.com/LeandroMileski/gpu-triage-agent.git"
 }
 
 variable "gitops_target_revision" {

@@ -12,5 +12,5 @@ resources:
 images:
   # Replace newName with `terraform output -raw ecr_repository_url` after the first apply.
   - name: triage-agent
-    newName: 111111111111.dkr.ecr.us-east-1.amazonaws.com/triage-agent
+    newName: 982081072219.dkr.ecr.us-east-1.amazonaws.com/triage-agent
     newTag: latest
