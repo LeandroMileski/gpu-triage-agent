@@ -38,6 +38,12 @@ module "vpc" {
 
   public_subnets = ["10.0.1.0/24", "10.0.2.0/24"]
 
+  # System, monitoring, and GPU nodes run in the first public subnet.
+  # There is no NAT gateway, so EKS rejects the node group unless that
+  # subnet assigns a public IPv4 at launch. This module flag applies to
+  # every public subnet; the second subnet is control plane only.
+  map_public_ip_on_launch = true
+
   enable_nat_gateway   = false
   enable_dns_hostnames = true
   enable_dns_support   = true
