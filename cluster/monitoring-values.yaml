@@ -42,6 +42,16 @@ prometheusOperator:
       operator: Equal
       value: monitoring
       effect: NoSchedule
+  # Create/patch Jobs do not inherit the operator scheduling rules above.
+  admissionWebhooks:
+    patch:
+      nodeSelector:
+        workload: monitoring
+      tolerations:
+        - key: workload
+          operator: Equal
+          value: monitoring
+          effect: NoSchedule
   resources:
     requests:
       cpu: 50m
